@@ -1,0 +1,238 @@
+'use client';
+
+import { 
+  Mail, 
+  MessageCircle, 
+  Clock, 
+  Send, 
+  ShieldCheck, 
+  ArrowRight, 
+  CheckCircle2,
+  ArrowLeft 
+} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+import Link from 'next/link';
+import { sendEmail } from './actions'; 
+
+export default function ContactPage() {
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  
+  // 🚀 ÉTAT POUR STOCKER ET AFFICHER LES ERREURS DE VALIDATION SUR LES CHAMPS
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  async function handleSubmit(formData: FormData) {
+    if (!acceptedTerms) return;
+
+    setStatus('sending');
+    setFormErrors({}); // Réinitialisation des erreurs précédentes
+    
+    const result = await sendEmail(formData);
+    
+    if (result.success) {
+      setStatus('success');
+      setAcceptedTerms(false); // Reset de la checkbox après succès
+    } else {
+      setStatus('error');
+      // On injecte les erreurs précises renvoyées par l'Action Zod
+      if (result.errors) {
+        setFormErrors(result.errors);
+      } else if (result.globalError) {
+        setFormErrors({ global: result.globalError });
+      }
+    }
+  }
+
+  return (
+    <main className="relative min-h-screen pt-32 pb-20 px-6 bg-[#f8fafc]">
+      <div className="max-w-7xl mx-auto relative z-10">
+        
+        <div className="flex flex-col lg:flex-row gap-12 items-stretch min-h-[700px]">
+          
+          {/* COLONNE GAUCHE : NOIRE */}
+          <div className="lg:w-1/2 bg-slate-950 rounded-[4rem] p-12 md:p-16 text-white flex flex-col justify-between shadow-3xl">
+            <div className="space-y-12">
+              
+              {/* BOUTON RETOUR À L'ACCUEIL */}
+              <Link 
+                href="/" 
+                className="inline-flex items-center gap-3 text-slate-500 hover:text-blue-500 transition-all group mb-4"
+              >
+                <div className="w-10 h-10 rounded-full border border-slate-800 flex items-center justify-center group-hover:border-blue-500 transition-all">
+                  <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] italic">
+                  Retour
+                </span>
+              </Link>
+
+              <h1 className="text-5xl md:text-6xl font-[1000] uppercase italic tracking-tighter leading-tight">
+                Prêt pour <br/><span className="text-blue-500">le décollage ?</span>
+              </h1>
+              
+              <div className="space-y-8">
+                <div className="flex items-center gap-6 group">
+                  <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center border border-slate-800 group-hover:bg-blue-600 transition-all">
+                    <Mail size={24} className="text-blue-500 group-hover:text-white" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1">Email Direct</div>
+                    <div className="text-lg font-bold italic tracking-tighter">kzvstudio@gmail.com</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6 group">
+                  <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center border border-slate-800 group-hover:bg-green-500 transition-all">
+                    <MessageCircle size={24} className="text-green-500 group-hover:text-white" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1">WhatsApp Business</div>
+                    <div className="text-lg font-bold italic tracking-tighter">+33 6 28 95 03 23</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-12 pt-12 border-t border-slate-900">
+               <div className="flex items-center gap-3 text-blue-500 font-black text-[10px] uppercase tracking-widest mb-4">
+                 <Clock size={14} /> Réponse sous 24h
+               </div>
+               <p className="text-xs text-slate-400 italic font-bold leading-relaxed">
+                 Chaque demande est traitée personnellement par moi-même. Je ne fais pas de copier-coller.
+               </p>
+            </div>
+          </div>
+
+          {/* COLONNE DROITE : FORMULAIRE */}
+          <div className="lg:w-2/3 bg-white rounded-[4rem] p-10 md:p-20 shadow-2xl shadow-blue-900/10 border-2 border-slate-200">
+            {status === 'success' ? (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }} 
+                animate={{ opacity: 1, scale: 1 }}
+                className="h-full flex flex-col items-center justify-center text-center space-y-6"
+              >
+                <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                  <CheckCircle2 size={48} />
+                </div>
+                <h2 className="text-4xl font-black uppercase italic text-slate-900">Message envoyé !</h2>
+                <p className="text-slate-500 font-bold italic">Je reviens vers vous dans les plus brefs délais.</p>
+                <button 
+                  onClick={() => { setStatus('idle'); setFormErrors({}); }}
+                  className="text-blue-600 font-black uppercase text-xs tracking-widest border-b-2 border-blue-600 pb-1"
+                >
+                  Envoyer un autre message
+                </button>
+              </motion.div>
+            ) : (
+              <form action={handleSubmit} className="space-y-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  
+                  {/* CHAMP : NOM */}
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-900 ml-4 italic">Votre Nom</label>
+                    <input name="nom" required type="text" placeholder="ex: Marc" className="w-full bg-slate-100 border-2 border-slate-200 rounded-3xl p-6 italic font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 transition-all outline-none" />
+                    {formErrors.nom && (
+                      <p className="text-red-500 text-xs font-bold pl-4 italic animate-fade-in">{formErrors.nom}</p>
+                    )}
+                  </div>
+                  
+                  {/* CHAMP : EMAIL */}
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-900 ml-4 italic">Email</label>
+                    <input name="email" required type="email" placeholder="ex: marc@business.com" className="w-full bg-slate-100 border-2 border-slate-200 rounded-3xl p-6 italic font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 transition-all outline-none" />
+                    {formErrors.email && (
+                      <p className="text-red-500 text-xs font-bold pl-4 italic animate-fade-in">{formErrors.email}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* CHAMP : PROJET */}
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-slate-900 ml-4 italic">Votre Projet</label>
+                  <div className="relative">
+                    <select name="projet" className="w-full bg-slate-100 border-2 border-slate-200 rounded-3xl p-6 italic font-bold appearance-none outline-none focus:bg-white focus:border-blue-600 text-slate-900 cursor-pointer">
+                      <option>Site Vitrine Alpha</option>
+                      <option>Business Pro</option>
+                      <option>Custom Studio</option>
+                      <option>Maintenance / Autre</option>
+                    </select>
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-900">
+                      <ArrowRight size={20} className="rotate-90" />
+                    </div>
+                  </div>
+                  {formErrors.projet && (
+                    <p className="text-red-500 text-xs font-bold pl-4 italic animate-fade-in">{formErrors.projet}</p>
+                  )}
+                </div>
+
+                {/* CHAMP : MESSAGE */}
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-slate-900 ml-4 italic">Votre Message</label>
+                  <textarea name="message" required rows={4} placeholder="Expliquez-nous vos objectifs..." className="w-full bg-slate-100 border-2 border-slate-200 rounded-3xl p-6 italic font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 transition-all outline-none resize-none" />
+                  {formErrors.message && (
+                    <p className="text-red-500 text-xs font-bold pl-4 italic animate-fade-in">{formErrors.message}</p>
+                  )}
+                </div>
+
+                {/* CASE À COCHER DE CONFORMITÉ RGPD */}
+                <div className="space-y-2">
+                  <div className="flex items-start gap-4 p-4 rounded-3xl bg-slate-50 border border-slate-200/60">
+                    <input
+                      type="checkbox"
+                      id="rgpd-consent"
+                      name="rgpd-consent"
+                      checked={acceptedTerms}
+                      onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      className="w-5 h-5 mt-0.5 accent-blue-600 border-2 border-slate-300 rounded-xl cursor-pointer transition-all"
+                      required
+                    />
+                    <label htmlFor="rgpd-consent" className="text-[11px] text-slate-500 font-medium leading-relaxed cursor-pointer select-none">
+                      En soumettant ce formulaire, j'accepte que les données saisies soient exploitées pour me recontacter dans le cadre de ma demande de devis, conformément à la{' '}
+                      <Link href="/mentions-legales" className="text-blue-600 font-bold hover:underline">
+                        Politique de Confidentialité
+                      </Link>.
+                    </label>
+                  </div>
+                  {formErrors.rgpd && (
+                    <p className="text-red-500 text-xs font-bold pl-4 italic animate-pulse">{formErrors.rgpd}</p>
+                  )}
+                </div>
+
+                {/* BOUTON SOUMISSION */}
+                <button 
+                  disabled={status === 'sending' || !acceptedTerms} 
+                  type="submit" 
+                  className={`px-12 py-8 rounded-3xl font-[1000] uppercase text-sm tracking-[0.4em] shadow-2xl transition-all flex items-center justify-center gap-4 w-full ${
+                    acceptedTerms 
+                      ? 'bg-blue-600 text-white hover:bg-slate-950 cursor-pointer' 
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                  }`}
+                >
+                  {status === 'sending' ? 'Décollage...' : 'Envoyer'} <Send size={20} />
+                </button>
+
+                {/* MESSAGES D'ERREURS GLOBAUX */}
+                {status === 'error' && formErrors.global && (
+                  <p className="text-red-500 text-center font-bold italic text-xs uppercase animate-pulse">
+                    {formErrors.global}
+                  </p>
+                )}
+
+                {status === 'error' && !formErrors.global && Object.keys(formErrors).length === 0 && (
+                  <p className="text-red-500 text-center font-bold italic text-xs uppercase animate-pulse">
+                    Oups ! Vérifie ta connexion ou ta clé API Resend.
+                  </p>
+                )}
+
+                <div className="flex items-center gap-4 text-slate-500 font-bold text-[10px] uppercase tracking-widest pt-8 border-t border-slate-100">
+                   <ShieldCheck size={16} className="text-green-600" /> 
+                   <span>RGPD : Vos données restent strictement confidentielles.</span>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
