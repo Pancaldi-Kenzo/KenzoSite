@@ -189,7 +189,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <h1 className="text-5xl md:text-7xl lg:text-[11rem] font-[1000] leading-[0.9] lg:leading-[0.8] tracking-[-0.05em] uppercase mb-16 italic text-blue-900">
-              Le web,<br /><span className="text-blue-600">sans effort.</span>
+              Le webe,<br /><span className="text-blue-600">sans effort.</span>
             </h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-end">
                 <p className="text-xl md:text-3xl lg:text-5xl text-slate-500 font-medium leading-tight lg:leading-none italic tracking-tighter">
