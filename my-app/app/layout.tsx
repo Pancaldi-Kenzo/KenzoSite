@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KZV.STUDIO | Digital Empires",
+  title: "KZV.STUDIO | Digital Web",
   description: "Conception d'actifs numériques haute performance.",
 };
 
